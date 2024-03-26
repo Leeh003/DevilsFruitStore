@@ -3,17 +3,17 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Button, StyleSheet } from 'react-native';
 import SQLite from 'react-native-sqlite-storage';
 
-const db = SQLite.openDatabase(
+/*const db = SQLite.openDatabase(
   { name: 'OnePieceShop.db', location: 'default' },
   () => {},
   error => console.log(error)
-);
+);*/
 
 const ProductsListScreen = ({ navigation }) => {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    db.transaction(tx => {
+    /*db.transaction(tx => {
       tx.executeSql('SELECT * FROM products', [], (tx, results) => {
         var temp = [];
         for (let i = 0; i < results.rows.length; ++i) {
@@ -21,11 +21,11 @@ const ProductsListScreen = ({ navigation }) => {
         }
         setProducts(temp);
       });
-    });
+    });*/
   }, []);
 
   return (
-    <View style={styles.container}>
+   /* <View style={styles.container}>
       <FlatList
         data={products}
         keyExtractor={item => item.id.toString()}
@@ -39,7 +39,11 @@ const ProductsListScreen = ({ navigation }) => {
           </View>
         )}
       />
+    </View>*/
+    <View style={styles.container}>
+      <Text>Aba de Listagem dos Produtos</Text>
     </View>
+
   );
 };
 

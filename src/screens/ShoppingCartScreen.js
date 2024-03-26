@@ -2,27 +2,27 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Button, FlatList, StyleSheet } from 'react-native';
 // Funções fictícias para acessar e modificar o carrinho de compras
-import { getCartItems, addToCart, removeFromCart, clearCart, checkout } from '../database/database';
+//import { getCartItems, addToCart, removeFromCart, clearCart, checkout } from '../database/Database';
 
 function ShoppingCartScreen({ navigation }) {
   const [cartItems, setCartItems] = useState([]);
 
-  useEffect(() => {
+  /*useEffect(() => {
     loadCartItems();
-  }, []);
+  }, []);*/
 
-  const loadCartItems = async () => {
+  /*const loadCartItems = async () => {
     const items = await getCartItems(); // Substitua pela sua lógica de acesso ao SQLite
     setCartItems(items);
-  };
+  };*/
 
-  const handleCheckout = async () => {
+  /*const handleCheckout = async () => {
     await checkout(); // Implemente a lógica de finalizar compra
     navigation.goBack();
-  };
+  };*/
 
   return (
-    <View style={styles.container}>
+    /*<View style={styles.container}>
       <FlatList
         data={cartItems}
         keyExtractor={item => item.productId.toString()}
@@ -34,6 +34,10 @@ function ShoppingCartScreen({ navigation }) {
         )}
       />
       <Button title="Finalizar Compra" onPress={handleCheckout} />
+    </View>*/
+
+    <View style={styles.container}>
+      <Text>Aba do carrinho</Text>
     </View>
   );
 }
