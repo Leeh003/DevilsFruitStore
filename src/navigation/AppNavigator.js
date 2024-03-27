@@ -13,9 +13,10 @@ function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
+        <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} options={{title: 'Detalhes do Produto'}} />
         <Stack.Screen name="CategoriesList" component={CategoriesListScreen} options={{title: 'Categorias Disponíveis'}} />
         <Stack.Screen name="ProductsList" component={ProductsListScreen} options={{title: 'Produtos Disponíveis'}} />
-        <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} options={{title: 'Detalhes do Produto'}} />
+        
         <Stack.Screen name="ShoppingCart" component={ShoppingCartScreen} options={{title: 'Carrinho de Compras'}} />
       </Stack.Navigator>
     </NavigationContainer>

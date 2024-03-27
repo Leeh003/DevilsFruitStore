@@ -12,7 +12,6 @@ const CategoryListScreen = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
 
-
   useEffect(() => {
     const initializeDB = async () => {
       try {
@@ -26,6 +25,7 @@ const CategoryListScreen = () => {
     initializeDB();
   }, []);
 
+  // Função para tratar a inserção de uma categoria
   const handleInsertCategory = async () => {
     try {
       await insertCategories(db, nome, descricao);
@@ -40,9 +40,8 @@ const CategoryListScreen = () => {
     }
   }
 
-   // Função para tratar a remoção de uma categoria
+  // Função para tratar a remoção de uma categoria
   const handleDeleteCategory = async (categoryId) => {
-    // Aqui você chamaria a função de deletar do seu banco de dados
     try {
       await deleteCategory(db, categoryId);
       Alert.alert("Sucesso", "Categoria removida com sucesso!");
@@ -55,7 +54,6 @@ const CategoryListScreen = () => {
 
   // Função para tratar a atualização de uma categoria
   const handleUpdateCategory = async () => {
-    // Aqui você chamaria a função de atualizar do seu banco de dados
     try {
       await updateCategory(db, editingCategory.id, nome, descricao);
       Alert.alert("Sucesso", "Categoria atualizada com sucesso!");
@@ -81,7 +79,7 @@ const CategoryListScreen = () => {
     setIsModalVisible(true);
   };
 
-  // Função ajustada para categorizar categorias principais e suas subcategorias.
+  // Função para categorizar categorias principais e suas subcategorias.
   const categorizeCategories = (categories) => {
     const mainCategories = categories.filter(category => category.isSub == 'false');
     const subCategories = categories.filter(category => category.isSub == 'true');

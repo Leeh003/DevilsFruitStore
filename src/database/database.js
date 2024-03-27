@@ -19,7 +19,7 @@ export const initDB = async () => {
           'CREATE TABLE IF NOT EXISTS Vendas (codigo INTEGER PRIMARY KEY NOT NULL, dataVenda TEXT, total REAL);'
         );
         await tx.executeSql(
-          'CREATE TABLE IF NOT EXISTS ItensVenda (codigoVenda INTEGER, codigoProduto INTEGER, quantidade INTEGER, FOREIGN KEY (codigoVenda) REFERENCES Vendas (codigo), FOREIGN KEY (codigoProduto) REFERENCES Produtos (codigo));'
+          'CREATE TABLE IF NOT EXISTS ItensVenda (codigo INTEGER PRIMARY KEY NOT NULL, codigoVenda INTEGER, codigoProduto INTEGER, quantidade INTEGER, valorItens DOUBLE, FOREIGN KEY (codigoVenda) REFERENCES Vendas (codigo), FOREIGN KEY (codigoProduto) REFERENCES Produtos (codigo));'
         );
         await tx.executeSql(
           'CREATE TABLE IF NOT EXISTS Categorias (id INTEGER PRIMARY KEY NOT NULL, nome TEXT, descricao TEXT, isSub BOOLEAN, mainCat TEXT);'
@@ -64,12 +64,12 @@ export const getProducts = async (db) => {
   });
 };
 
-export const getProductByName = async (db, name) => {
+export const getProductById = async (db, codigo) => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
-        'SELECT * FROM Produtos WHERE name = ?;',
-        [name],
+        'SELECT * FROM Produtos WHERE codigo = ?;',
+        [codigo],
         (_, results) => {
           if (results.rows.length > 0) {
             resolve(results.rows.item(0));
