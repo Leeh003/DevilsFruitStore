@@ -1,7 +1,7 @@
 //CategoryListScreen.js
 import React, { useEffect, useState } from 'react';
 import { View, TextInput, Button, Alert, FlatList, Text, StyleSheet, TouchableOpacity, Modal } from 'react-native';
-import { getDBConnection, initDB, insertCategories, getCategories } from '../database/database'; 
+import { initDB, insertCategories, getCategories, updateCategory, deleteCategory } from '../database/database'; 
 
 const CategoryListScreen = () => {
   const [nome, setNome] = useState('');
@@ -10,6 +10,8 @@ const CategoryListScreen = () => {
   const [categories, setCategories] = useState([]);
   const [expandedCategories, setExpandedCategories] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+
 
   useEffect(() => {
     const initializeDB = async () => {
@@ -30,15 +32,53 @@ const CategoryListScreen = () => {
       Alert.alert("Sucesso", "Categoria inserida com sucesso!");
       setNome('');
       setDescricao('');
-      fetchAndSetCategories();
+      closeModal();
+      fetchAndSetCategories(db);
     } catch (error) {
       console.error('Erro ao inserir categoria:', error);
       Alert.alert("Erro", "Não foi possível inserir a categoria");
     }
   }
 
+   // Função para tratar a remoção de uma categoria
+  const handleDeleteCategory = async (categoryId) => {
+    // Aqui você chamaria a função de deletar do seu banco de dados
+    try {
+      await deleteCategory(db, categoryId);
+      Alert.alert("Sucesso", "Categoria removida com sucesso!");
+      fetchAndSetCategories(db);
+    } catch (error) {
+      console.error('Erro ao remover categoria:', error);
+      Alert.alert("Erro", "Não foi possível remover a categoria");
+    }
+  };
+
+  // Função para tratar a atualização de uma categoria
+  const handleUpdateCategory = async () => {
+    // Aqui você chamaria a função de atualizar do seu banco de dados
+    try {
+      await updateCategory(db, editingCategory.id, nome, descricao);
+      Alert.alert("Sucesso", "Categoria atualizada com sucesso!");
+      setNome('');
+      setDescricao('');
+      setEditingCategory(null);
+      closeModal();
+      fetchAndSetCategories(db);
+    } catch (error) {
+      console.error('Erro ao atualizar categoria:', error);
+      Alert.alert("Erro", "Não foi possível atualizar a categoria");
+    }
+  };
+
   const closeModal = () => {
     setIsModalVisible(false);
+  };
+
+  const openEditModal = (category) => {
+    setEditingCategory(category); // Armazena a categoria atual para edição
+    setNome(category.nome);
+    setDescricao(category.descricao);
+    setIsModalVisible(true);
   };
 
   // Função ajustada para categorizar categorias principais e suas subcategorias.
@@ -80,46 +120,58 @@ const CategoryListScreen = () => {
     }));
   };
 
-  const renderCategoryCard = ({ item }) => (
-    <View>
-      <TouchableOpacity style={styles.card} onPress={() => toggleDescription(item.id)}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardText}>{item.nome}</Text>
-          {item.nome === 'Zoan' && ( // Condição modificada para verificar o nome da categoria
-            <TouchableOpacity style={styles.addButton} onPress={(e) => {
-              e.stopPropagation(); // Previne que o evento do card pai seja disparado
-              setIsModalVisible(true);
-            }}>
-              <Text style={styles.addButtonText}>+</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-        {expandedCategories[item.id] && (
-          <View style={styles.descriptionContainer}>
-            <Text style={styles.cardDescription}>{item.descricao}</Text>
+  const renderCategoryCard = ({ item }) => {
+    return (
+      <View style={styles.cardContainer}>
+        {/* Card da categoria principal */}
+        <TouchableOpacity style={styles.card} onPress={() => toggleDescription(item.id)}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardText}>{item.nome}</Text>
+            {item.nome === 'Zoan' && (
+              <TouchableOpacity style={styles.addButton} onPress={(e) => {
+                e.stopPropagation();
+                setNome(item.nome);
+                setDescricao(item.descricao);
+                setIsModalVisible(true);
+              }}>
+                <Text style={styles.addButtonText}>+</Text>
+              </TouchableOpacity>
+            )}
           </View>
-        )}
-      </TouchableOpacity>
-      {expandedCategories[item.id] && item.subCategories && item.subCategories.map(sub => (
-        <TouchableOpacity key={sub.id} style={styles.subCard} onPress={() => toggleDescription(sub.id)}>
-          <Text style={styles.cardText}>{sub.nome}</Text>
-          {sub.nome === 'Zoan' && ( // Condição adicionada também para as subcategorias
-            <TouchableOpacity style={styles.addButton} onPress={(e) => {
-              e.stopPropagation(); // Previne que o evento do card pai seja disparado
-              setIsModalVisible(true);
-            }}>
-              <Text style={styles.addButtonText}>+</Text>
-            </TouchableOpacity>
-          )}
-          {expandedCategories[sub.id] && (
+          {expandedCategories[item.id] && (
             <View style={styles.descriptionContainer}>
-              <Text style={styles.cardDescription}>{sub.descricao}</Text>
+              <Text style={styles.cardDescription}>{item.descricao}</Text>
             </View>
           )}
         </TouchableOpacity>
-      ))}
-    </View>
-  );
+        
+           {/* Cards das subcategorias */}
+          {expandedCategories[item.id] && item.subCategories && item.subCategories.map(sub => (
+            <View key={sub.id}>
+              <TouchableOpacity style={styles.subCard} onPress={() => toggleDescription(sub.id)}>
+                <View style={styles.cardHeader}>
+                  <Text style={styles.cardText}>{sub.nome}</Text>
+                  <View style={styles.buttonGroup}>
+                    <TouchableOpacity style={styles.editButton} onPress={() => openEditModal(sub)}>
+                      <Text style={styles.buttonText}>Edit</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.deleteButton} onPress={() => handleDeleteCategory(sub.id)}>
+                      <Text style={styles.buttonText}>Delete</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                {expandedCategories[sub.id] && (
+                  <View style={styles.descriptionContainer}>
+                  <Text style={styles.cardDescription}>{sub.descricao}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+    );
+  };
+  
   
 
   return (
@@ -153,10 +205,17 @@ const CategoryListScreen = () => {
               value={descricao}
               onChangeText={setDescricao}
             />
+            {editingCategory ? (
+            <Button
+              title="Atualizar Categoria"
+              onPress={handleUpdateCategory}
+            />
+          ) : (
             <Button
               title="Inserir Categoria"
               onPress={handleInsertCategory}
             />
+          )}
           </View>
         </View>
       </Modal>
@@ -195,6 +254,12 @@ const styles = StyleSheet.create({
   cardText: {
     fontSize: 16,
   },
+  buttonGroup: {
+    flexDirection: 'row',
+  },
+  buttonText: {
+    color: '#fff',
+  },
   subCard: {
     backgroundColor: '#f9f9f9', // Cor de fundo diferente para subcategorias
     marginLeft: 20, // Indenta o card filho para distingui-lo do pai
@@ -205,6 +270,32 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: 5,
     marginBottom: 5,
+  },
+  subCardContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    backgroundColor: '#f9f9f9',
+    marginBottom: 10,
+  },
+  subCardButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  editButton: {
+    backgroundColor: '#f0ad4e', // Cor de fundo amarelo para edição
+    padding: 10,
+    marginRight: 5, // Espaço entre os botões de editar e deletar
+    borderRadius: 5, // Bordas arredondadas
+  },
+  deleteButton: {
+    backgroundColor: '#d9534f', // Cor de fundo vermelho para deletar
+    padding: 10,
+    borderRadius: 5, // Bordas arredondadas
   },
   addButton: {
     backgroundColor: '#ccc',

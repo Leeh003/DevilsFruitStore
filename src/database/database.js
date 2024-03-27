@@ -147,11 +147,11 @@ export const getCategories = async (db) => {
   }
 };
 
-export const updateCatagory = async (db, codigo, name, descricao) => {
+export const updateCategory = async (db, codigo, name, descricao) => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
-        'UPDATE Categorias SET nome = ?, descricao = ? WHERE codigo = ?;',
+        'UPDATE Categorias SET nome = ?, descricao = ? WHERE id = ?;',
         [name, descricao, codigo],
         (_, results) => resolve(results),
         (_, error) => reject(error)
@@ -164,7 +164,7 @@ export const deleteCategory = async (db, codigo) => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
-        'DELETE FROM Categorias WHERE codigo = ?;',
+        'DELETE FROM Categorias WHERE id = ?;',
         [codigo],
         (_, results) => resolve(results),
         (_, error) => reject(error)
