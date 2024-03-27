@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Button, FlatList, StyleSheet } from 'react-native';
 // Funções fictícias para acessar e modificar o carrinho de compras
-//import { getCartItems, addToCart, removeFromCart, clearCart, checkout } from '../database/Database';
+//import { getCartItems, addToCart, removeFromCart, clearCart, checkout } from '../database/database';
 
 function ShoppingCartScreen({ navigation }) {
   const [cartItems, setCartItems] = useState([]);

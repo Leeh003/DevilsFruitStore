@@ -1,7 +1,7 @@
 // src/screens/ProductDetailsScreen.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import { getProductById } from '../database/Database'; // Função fictícia para buscar detalhes do produto
+import { getProductById } from '../database/database'; // Função fictícia para buscar detalhes do produto
 
 function ProductDetailsScreen({ route, navigation }) {
   //const { productId } = route.params;

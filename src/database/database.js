@@ -1,9 +1,10 @@
-import SQLite from 'expo-sqlite';
+//database.js
+import * as SQLite from 'expo-sqlite';
 
 const database_name = 'OnePieceStore.db';
 
 export const getDBConnection = async () => {
-  return SQLite.openDatabase(database_name);
+  return SQLite.openDatabase('OnePieceStore.db');
 };
 
 // Função para inicializar as tabelas do banco de dados
@@ -24,12 +25,14 @@ export const initDB = async () => {
           'CREATE TABLE IF NOT EXISTS Categorias (id INTEGER PRIMARY KEY NOT NULL, nome TEXT, descricao TEXT, isSub BOOLEAN, mainCat TEXT);'
         );
       });
+      return db;
   } catch (error) {
     console.log(error);
+    throw error;
   }
 };
 
-export const insertProduct = async (name, descricao, preco, categoria) => {
+export const insertProduct = async (db, name, descricao, preco, categoria) => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
@@ -42,7 +45,7 @@ export const insertProduct = async (name, descricao, preco, categoria) => {
   });
 };
 
-export const getProducts = async () => {
+export const getProducts = async (db) => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
@@ -61,7 +64,7 @@ export const getProducts = async () => {
   });
 };
 
-export const getProductByName = async (name) => {
+export const getProductByName = async (db, name) => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
@@ -80,7 +83,7 @@ export const getProductByName = async (name) => {
   });
 };
 
-export const updateProduct = async (codigo, name, descricao, preco, categoria) => {
+export const updateProduct = async (db, codigo, name, descricao, preco, categoria) => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
@@ -93,7 +96,7 @@ export const updateProduct = async (codigo, name, descricao, preco, categoria) =
   });
 };
 
-export const deleteProduct = async (codigo) => {
+export const deleteProduct = async (db, codigo) => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
@@ -106,37 +109,13 @@ export const deleteProduct = async (codigo) => {
   });
 };
 
-export const insertCategories = async (db, name, descricao) => {
-  try {
-    console.log("Entrou");
-    db.transaction(async (tx) => {
-      tx.executeSql(
-        'INSERT INTO Categorias (nome, descricao, isSub, mainCat) VALUES (?, ?, ?, ?)',
-        [name, descricao, false, null],
-      );
-    });
-    console.log("Categoria inserida com sucesso!");
-  } catch (error) {
-    console.log({ name, descricao});
-    console.error("Erro ao inserir categoria:", error);
-    throw error; // Para permitir tratamento de erro onde a função é chamada
-  }
-};
-
-
-export const getCategories = async () => {
+export const insertCategories = async (db, name, descricao, isSub = true, mainCat = 'Zoan') => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
-        'SELECT * FROM Categorias;',
-        [],
-        (_, results) => {
-          let data = [];
-          for (let i = 0; i < results.rows.length; i++) {
-            data.push(results.rows.item(i));
-          }
-          resolve(data);
-        },
+        'INSERT INTO Categorias (nome, descricao, isSub, mainCat) VALUES (?, ?, ?, ?);',
+        [name, descricao, isSub, mainCat],
+        (_, results) => resolve(results),
         (_, error) => reject(error)
       );
     });
@@ -144,7 +123,31 @@ export const getCategories = async () => {
 };
 
 
-export const updateCatagory = async (codigo, name, descricao) => {
+export const getCategories = async (db) => {
+  try {
+    return new Promise((resolve, reject) => {
+      db.transaction(tx => {
+        tx.executeSql(
+          'SELECT * FROM Categorias;',
+          [],
+          (_, results) => {
+            let data = [];
+            for (let i = 0; i < results.rows.length; i++) {
+              data.push(results.rows.item(i));
+            }
+            resolve(data);
+          },
+          (_, error) => reject(error)
+        );
+      });
+    });
+  } catch (error) {
+    console.error('Erro ao recuperar categorias:', error);
+    throw error;
+  }
+};
+
+export const updateCatagory = async (db, codigo, name, descricao) => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
@@ -157,7 +160,7 @@ export const updateCatagory = async (codigo, name, descricao) => {
   });
 };
 
-export const deleteCategory = async (codigo) => {
+export const deleteCategory = async (db, codigo) => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
