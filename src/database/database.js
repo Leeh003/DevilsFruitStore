@@ -33,6 +33,7 @@ export const initDB = async () => {
 };
 
 export const insertProduct = async (db, name, descricao, preco, categoria) => {
+  console.log('here')
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
@@ -70,6 +71,25 @@ export const getProductById = async (db, codigo) => {
       tx.executeSql(
         'SELECT * FROM Produtos WHERE codigo = ?;',
         [codigo],
+        (_, results) => {
+          if (results.rows.length > 0) {
+            resolve(results.rows.item(0));
+          } else {
+            reject('Produto não encontrado');
+          }
+        },
+        (_, error) => reject(error)
+      );
+    });
+  });
+};
+
+export const getProductByName = async (db, name) => {
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'SELECT * FROM Produtos WHERE name = ?;',
+        [name],
         (_, results) => {
           if (results.rows.length > 0) {
             resolve(results.rows.item(0));

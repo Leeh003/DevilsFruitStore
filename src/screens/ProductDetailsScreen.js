@@ -1,7 +1,8 @@
 //ProductDetailsScreen.js
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, StyleSheet, Button, Image, TouchableOpacity, Text } from 'react-native';
+import { View, TextInput, StyleSheet, Button, Image, TouchableOpacity, Text, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker'; 
+import * as ImagePicker from 'expo-image-picker'; // Import for image selection
 import { initDB, insertProduct, updateProduct, deleteProduct, getCategories } from '../database/database'; 
 
 function ProductDetailsScreen({ route, navigation }) {
@@ -34,14 +35,6 @@ function ProductDetailsScreen({ route, navigation }) {
     initializeDB();
   }, []);
 
-  /*if (!product) {
-    return (
-      <View style={styles.container}>
-        <Text>Carregando...</Text>
-      </View>
-    );
-  }*/
-
   const fetchCategories = async (db) => {
     try {
       const fetchedCategories = await getCategories(db);
@@ -55,6 +48,27 @@ function ProductDetailsScreen({ route, navigation }) {
     return categorias.map((category) => (
       <Picker.Item key={category.id} label={category.nome} value={category.id} />
     ));
+  };
+
+  const selectImage = async () => {
+    try {
+      let result = {};
+
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+      result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.5,
+      });
+
+      if (!result.cancelled) {
+        setImagem(result.assets[0].uri);
+      }
+    } catch (error) {
+      alert('Erro ao selecionar image: ' + error.message);
+      console.error('Erro ao selecionar imagem:', error);
+    }
   };
 
   const handleSave = async () => {
@@ -89,7 +103,6 @@ function ProductDetailsScreen({ route, navigation }) {
     try {
       await deleteProduct(db, productId);
       Alert.alert("Sucesso", "Produto removido com sucesso!");
-      fetchAndSetCategories(db);
     } catch (error) {
       console.error('Erro ao remover produto:', error);
       Alert.alert("Erro", "Não foi possível remover o produto");
@@ -101,10 +114,15 @@ function ProductDetailsScreen({ route, navigation }) {
       <View style={styles.imageContainer}>
         {/* Exibir imagem aqui */}
         {imagem ? (
-          <Image source={{ uri: imagem }} style={styles.image} />
+          <TouchableOpacity style={styles.image} onPress={selectImage}>
+            <Image source={{ uri: imagem }} style={styles.image} />
+          </TouchableOpacity>
         ) : (
-          <Text style={styles.imagePlaceholderText}>Imagem</Text>
+          <TouchableOpacity style={styles.imageSelectButton} onPress={selectImage}>
+            <Text style={styles.buttonText}>Selecionar Imagem</Text>
+          </TouchableOpacity>
         )}
+        
       </View>
       <TextInput
         style={styles.input}
@@ -130,8 +148,6 @@ function ProductDetailsScreen({ route, navigation }) {
         selectedValue={categoria}
         onValueChange={(itemValue, itemIndex) => setCategoria(itemValue)}
       >
-        {/* Opção padrão vazia */}
-        <Picker.Item label="Selecione uma categoria..." value="" />
         {/* Opções de categorias */}
         {renderCategoryOptions()}
       </Picker>
