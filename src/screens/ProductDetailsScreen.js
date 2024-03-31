@@ -1,48 +1,35 @@
-//ProductDetailsScreen.js
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, StyleSheet, Button, Image, TouchableOpacity, Text, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker'; 
-import * as ImagePicker from 'expo-image-picker'; // Import for image selection
-import { initDB, insertProduct, updateProduct, deleteProduct, getCategories } from '../database/database'; 
+import { View, TextInput, StyleSheet, Image, TouchableOpacity, Text, Alert } from 'react-native'
+import { initDB, insertProduct, updateProduct, deleteProduct, getCategories, getProductById } from '../database/database'; 
+import { useNavigation } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker'; 
+import Header from '../components/Header';
 
-function ProductDetailsScreen({ route, navigation }) {
-  const [nome, setNome] = useState('');
-  const [descricao, setDescricao] = useState('');
-  const [valor, setValor] = useState('');
-  const [categoria, setCategoria] = useState('');
-  const [imagem, setImagem] = useState(null);
+function ProductDetailsScreen({ route }) {
+  const { id, nomeEdit, descricaoEdit, valorEdit, categoriaEdit, imagemEdit } = route.params;
+  const [nome, setNome] = useState(nomeEdit);
+  const [descricao, setDescricao] = useState(descricaoEdit);
+  const [valor, setValor] = useState(valorEdit);
+  const [categoria, setCategoria] = useState(categoriaEdit);
+  const [imagem, setImagem] = useState(imagemEdit);
   const [db, setDB] = useState(null);
   const [categorias, setCategorias] = useState([]);
-  //const { productId } = route.params;
-  //const [product, setProduct] = useState(null);
-
+  const navigation = useNavigation();
 
   useEffect(() => {
     const initializeDB = async () => {
       try {
         const db = await initDB();
         setDB(db);
-        fetchCategories(db);
-         /*const fetchProduct = async () => {
-          const data = await getProductById(productId); // Substitua pela sua lógica de acesso ao SQLite
-          setProduct(data);
-        };
-        fetchProduct();*/
+        const fetchedCategories = await getCategories(db);
+        setCategorias(fetchedCategories);
       } catch (error) {
         console.error('Erro ao inicializar o banco de dados:', error);
       }
     };
     initializeDB();
   }, []);
-
-  const fetchCategories = async (db) => {
-    try {
-      const fetchedCategories = await getCategories(db);
-      setCategorias(fetchedCategories); // Definindo as categorias no estado local
-    } catch (error) {
-      console.error('Erro ao recuperar categorias:', error);
-    }
-  };
 
   const renderCategoryOptions = () => {
     return categorias.map((category) => (
@@ -71,14 +58,19 @@ function ProductDetailsScreen({ route, navigation }) {
     }
   };
 
+  const handleSaveOrUpdate = async () => {
+    if (id) {
+      handleUpdate();
+    } else {
+      handleSave();
+    }
+  };
+
   const handleSave = async () => {
     try {
-      await insertProduct(db, nome, descricao, valor, categoria);
+      await insertProduct(db, nome, descricao, valor, categoria, imagem);
       Alert.alert("Sucesso", "Produto inserido com sucesso!");
-      setNome('');
-      setDescricao('');
-      setValor('');
-      setCategoria('');
+      navigation.navigate('ProductsList', { refresh: true }); // Adicione o parâmetro refresh
     } catch (error) {
       console.error('Erro ao inserir produto:', error);
       Alert.alert("Erro", "Não foi possível inserir o produto");
@@ -87,22 +79,21 @@ function ProductDetailsScreen({ route, navigation }) {
 
   const handleUpdate = async () => {
     try {
-      await updateProduct(db, productId, nome, descricao, valor, categoria);
-      Alert.alert("Sucesso", "Produto atualizado com sucesso!");
-      setNome('');
-      setDescricao('');
-      setValor('');
-      setCategoria('');
+      await updateProduct(db, id, nome, descricao, valor, categoria, imagem);
+      Alert.alert("Sucesso", "Produto atualizado com sucesso!");      
+      console.log( await getProductById(db, id))
+      navigation.navigate('ProductsList', { refresh: true }); 
     } catch (error) {
       console.error('Erro ao atualizar produto:', error);
       Alert.alert("Erro", "Não foi possível atualizar o produto");
     }
   };
 
-  const handleDelete = async (productId) => {
+  const handleDelete = async () => {
     try {
-      await deleteProduct(db, productId);
+      await deleteProduct(db, id);
       Alert.alert("Sucesso", "Produto removido com sucesso!");
+      navigation.navigate('ProductsList', { refresh: true });
     } catch (error) {
       console.error('Erro ao remover produto:', error);
       Alert.alert("Erro", "Não foi possível remover o produto");
@@ -111,6 +102,7 @@ function ProductDetailsScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      <Header/>
       <View style={styles.imageContainer}>
         {/* Exibir imagem aqui */}
         {imagem ? (
@@ -139,14 +131,14 @@ function ProductDetailsScreen({ route, navigation }) {
       <TextInput
         style={styles.input}
         placeholder="Valor"
-        value={valor}
+        value={String(valor)}
         onChangeText={setValor}
         keyboardType="numeric"
       />
       {/* Picklist de categorias */}
       <Picker
         selectedValue={categoria}
-        onValueChange={(itemValue, itemIndex) => setCategoria(itemValue)}
+        onValueChange={(itemValue) => setCategoria(itemValue)}
       >
         {/* Opções de categorias */}
         {renderCategoryOptions()}
@@ -154,7 +146,7 @@ function ProductDetailsScreen({ route, navigation }) {
       <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
         <Text style={styles.buttonText}>Excluir</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+      <TouchableOpacity style={styles.saveButton} onPress={handleSaveOrUpdate}>
         <Text style={styles.buttonText}>Salvar</Text>
       </TouchableOpacity>
     </View>
@@ -205,16 +197,5 @@ const styles = StyleSheet.create({
     color: 'white',
   },
 });
-  /*return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{product.description}</Text>
-      <Text>Preço: {product.price}</Text>
-      <Button title="Adicionar ao Carrinho" onPress={() => navigation.navigate('ShoppingCart', { productId: product.id, productName: product.description })} />
-    </View>
-    <View style={styles.container}>
-      <Text>Aba de detalhe do produto!</Text>
-    </View>
-  );
-}*/
 
 export default ProductDetailsScreen;

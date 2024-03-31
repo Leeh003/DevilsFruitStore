@@ -1,59 +1,125 @@
-// src/screens/ShoppingCartScreen.js
-import React, { useState, useEffect } from 'react';
-import { View, Text, Button, FlatList, StyleSheet } from 'react-native';
-// Funções fictícias para acessar e modificar o carrinho de compras
-//import { getCartItems, addToCart, removeFromCart, clearCart, checkout } from '../database/database';
+import { View, Text, Modal, FlatList, Image, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { insertSale, insertSaleItems } from '../database/database';
 
-function ShoppingCartScreen({ navigation }) {
-  const [cartItems, setCartItems] = useState([]);
+const ShoppingCartScreen = ({ isVisible, toggleModal, cartItems, setCartItems, db }) => {
 
-  /*useEffect(() => {
-    loadCartItems();
-  }, []);*/
+  const calculateTotal = () => {
+    let total = 0;
+    cartItems.forEach(item => {
+      total += item.preco * item.quantity;
+    });
+    return total;
+  };
 
-  /*const loadCartItems = async () => {
-    const items = await getCartItems(); // Substitua pela sua lógica de acesso ao SQLite
-    setCartItems(items);
-  };*/
+  const finalizePurchase = async () => {
+    try {
+      const saleDate = new Date().toISOString();
+      const total = calculateTotal();
+      const saleId = await insertSale(db, saleDate, total);
 
-  /*const handleCheckout = async () => {
-    await checkout(); // Implemente a lógica de finalizar compra
-    navigation.goBack();
-  };*/
+      cartItems.forEach(async item => {
+        await insertSaleItems(db, saleId, item.id, item.quantity, item.preco);
+      });
+      toggleModal();
+      Alert.alert("Sucesso", "Compra realizada com sucesso!");
+      setCartItems([]);
+    } catch (error) {
+      console.error('Erro ao finalizar a compra:', error);
+      Alert.alert("Erro", "Não foi possível realizar a compra");
+    }
+  };
 
-  return (
-    /*<View style={styles.container}>
-      <FlatList
-        data={cartItems}
-        keyExtractor={item => item.productId.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.item}>
-            <Text>{item.productName} - Quantidade: {item.quantity}</Text>
-            <Button title="Remover" onPress={() => removeFromCart(item.productId)} />
-          </View>
-        )}
-      />
-      <Button title="Finalizar Compra" onPress={handleCheckout} />
-    </View>*/
-
-    <View style={styles.container}>
-      <Text>Aba do carrinho</Text>
+  const renderItem = ({ item }) => (
+    <View style={styles.itemContainer}>
+      <Image source={{ uri: item.imagem }} style={styles.itemImage} />
+      <View style={styles.itemDetails}>
+        <Text style={styles.itemName}>{item.name}</Text>
+        <Text style={styles.itemQuantity}>Quantidade: {item.quantity}</Text>
+        <Text style={styles.itemPrice}>Valor: R$ {item.preco * item.quantity}</Text>
+      </View>
     </View>
   );
-}
+
+  return (
+    <Modal visible={isVisible} transparent animationType="slide">
+      <View style={styles.modalContainer}>
+        <View style={styles.modalContent}>
+          <TouchableOpacity onPress={toggleModal} style={styles.closeButton}>
+            <Text style={styles.closeButtonText}>X</Text>
+          </TouchableOpacity>
+          <FlatList
+            data={cartItems}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id.toString()}
+          />
+          <TouchableOpacity onPress={finalizePurchase} style={styles.finalizeButton}>
+            <Text style={styles.finalizeButtonText}>Finalizar Compra</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+};
 
 const styles = StyleSheet.create({
-  container: {
+  modalContainer: {
     flex: 1,
-    marginTop: 20,
-  },
-  item: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
     padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#cccccc',
+    width: '80%',
+  },
+  itemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  itemImage: {
+    width: 80,
+    height: 80,
+    marginRight: 10,
+  },
+  itemDetails: {
+    flex: 1,
+  },
+  itemName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  itemQuantity: {
+    fontSize: 14,
+    marginBottom: 5,
+  },
+  itemPrice: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 5,
+    right: 15,
+  },
+  closeButtonText: {
+    color: 'blue',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  finalizeButton: {
+    backgroundColor: 'green',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  finalizeButtonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
 

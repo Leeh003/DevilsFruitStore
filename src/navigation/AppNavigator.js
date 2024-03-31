@@ -6,6 +6,7 @@ import ProductsListScreen from '../screens/ProductsListScreen';
 import ProductDetailsScreen from '../screens/ProductDetailsScreen';
 import ShoppingCartScreen from '../screens/ShoppingCartScreen';
 import CategoriesListScreen from '../screens/CategoriesListScreen';
+import SalesListScreen from '../screens/SalesListScreen';
 
 const Stack = createStackNavigator();
 
@@ -15,8 +16,8 @@ function AppNavigator() {
       <Stack.Navigator>
         <Stack.Screen name="ProductsList" component={ProductsListScreen} options={{title: 'Produtos Disponíveis'}} />
         <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} options={{title: 'Detalhes do Produto'}} />
+        <Stack.Screen name="SalesList" component={SalesListScreen} options={{title: 'Vendas Realizadas'}} />
         <Stack.Screen name="CategoriesList" component={CategoriesListScreen} options={{title: 'Categorias Disponíveis'}} />
-        
         <Stack.Screen name="ShoppingCart" component={ShoppingCartScreen} options={{title: 'Carrinho de Compras'}} />
       </Stack.Navigator>
     </NavigationContainer>

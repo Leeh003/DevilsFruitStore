@@ -1,7 +1,9 @@
 //CategoryListScreen.js
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, TextInput, Button, Alert, FlatList, Text, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { initDB, insertCategories, getCategories, updateCategory, deleteCategory } from '../database/database'; 
+import Header from '../components/Header';
 
 const CategoryListScreen = () => {
   const [nome, setNome] = useState('');
@@ -12,7 +14,8 @@ const CategoryListScreen = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
 
-  useEffect(() => {
+  useFocusEffect(
+    React.useCallback(() =>  {
     const initializeDB = async () => {
       try {
         const db = await initDB();
@@ -23,7 +26,7 @@ const CategoryListScreen = () => {
       }
     };
     initializeDB();
-  }, []);
+  }, []));
 
   // Função para tratar a inserção de uma categoria
   const handleInsertCategory = async () => {
@@ -174,6 +177,7 @@ const CategoryListScreen = () => {
 
   return (
     <View style={styles.container}>
+      <Header />
       <FlatList
         data={categories}
         keyExtractor={(item) => item.id.toString()}
@@ -228,14 +232,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
   },
-  input: {
-    width: '100%',
-    marginVertical: 10,
-    padding: 15,
-    borderWidth: 1,
-    borderColor: '#cccccc',
-    borderRadius: 5,
-  },
   card: {
     backgroundColor: '#fff',
     padding: 20,
@@ -246,8 +242,8 @@ const styles = StyleSheet.create({
   },
   cardHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between', // Assegura que o nome e o botão estejam nas extremidades
-    alignItems: 'center', // Centraliza verticalmente o nome e o botão
+    justifyContent: 'space-between', 
+    alignItems: 'center',
   },
   cardText: {
     fontSize: 16,
@@ -259,8 +255,8 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   subCard: {
-    backgroundColor: '#f9f9f9', // Cor de fundo diferente para subcategorias
-    marginLeft: 20, // Indenta o card filho para distingui-lo do pai
+    backgroundColor: '#f9f9f9', 
+    marginLeft: 20, 
     marginRight: 20,
     padding: 15,
     borderWidth: 1,
@@ -269,31 +265,16 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 5,
   },
-  subCardContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    backgroundColor: '#f9f9f9',
-    marginBottom: 10,
-  },
-  subCardButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
   editButton: {
-    backgroundColor: '#f0ad4e', // Cor de fundo amarelo para edição
+    backgroundColor: '#f0ad4e', 
     padding: 10,
-    marginRight: 5, // Espaço entre os botões de editar e deletar
-    borderRadius: 5, // Bordas arredondadas
+    marginRight: 5, 
+    borderRadius: 5, 
   },
   deleteButton: {
-    backgroundColor: '#d9534f', // Cor de fundo vermelho para deletar
+    backgroundColor: '#d9534f',
     padding: 10,
-    borderRadius: 5, // Bordas arredondadas
+    borderRadius: 5,
   },
   addButton: {
     backgroundColor: '#ccc',
@@ -309,17 +290,10 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   descriptionContainer: {
-    borderTopWidth: 1, // Adiciona a linha separadora acima da descrição
+    borderTopWidth: 1, 
     borderTopColor: '#ccc',
-    marginTop: 10, // Espaço acima da linha separadora
-    paddingTop: 10, // Espaço abaixo da linha separadora
-  },
-  descriptionSeparator: {
-    width: '100%',
-    height: 1,
-    backgroundColor: '#ccc',
-    marginBottom: 10,
-    marginTop: 10, // Adicionando margem acima para separar a descrição do restante do card
+    marginTop: 10,
+    paddingTop: 10, 
   },
   flatList: {
     width: '100%',
@@ -327,12 +301,6 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontSize: 20,
     fontWeight: 'bold',
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   modalContent: {
     backgroundColor: '#fff',
@@ -355,21 +323,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   closeButton: {
-    position: 'absolute', // Posicionamento absoluto
-    top: -40, // Espaço do topo do modal
-    right: 10, // Espaço do lado direito do modal
-    backgroundColor: 'lightgrey', // Cor de fundo para o botão
-    borderRadius: 15, // Arredondar os cantos do botão
-    width: 30, // Largura do botão
-    height: 30, // Altura do botão
-    alignItems: 'center', // Centralizar o texto do botão horizontalmente
-    justifyContent: 'center', // Centralizar o texto do botão verticalmente
-    zIndex: 1, // Garantir que o botão fique acima dos outros elementos
+    position: 'absolute', 
+    top: -40, 
+    right: 10, 
+    backgroundColor: 'lightgrey',
+    borderRadius: 15, 
+    width: 30, 
+    height: 30, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    zIndex: 1, 
   },
   closeButtonText: {
-    fontSize: 16, // Tamanho da fonte do "X"
-    color: 'black', // Cor do texto do "X"
-    fontWeight: 'bold', // Negrito para o texto do "X"
+    fontSize: 16, 
+    color: 'black',
+    fontWeight: 'bold',
   },
 });
 
