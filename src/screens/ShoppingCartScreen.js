@@ -1,5 +1,5 @@
 import { View, Text, Modal, FlatList, Image, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { insertSale, insertSaleItems } from '../database/database';
+import { insertSale, insertSaleItens, updateDBStructure } from '../database/database';
 import { Ionicons } from '@expo/vector-icons';
 
 const ShoppingCartScreen = ({ isVisible, toggleModal, cartItems, setCartItems, db }) => {
@@ -19,7 +19,7 @@ const ShoppingCartScreen = ({ isVisible, toggleModal, cartItems, setCartItems, d
       const saleId = await insertSale(db, saleDate, total);
 
       cartItems.forEach(async item => {
-        await insertSaleItems(db, saleId.insertId, item.codigo, item.quantity, item.preco);
+        await insertSaleItens(db, saleId.insertId, item.codigo, item.quantity, item.preco);
       });
       toggleModal();
       Alert.alert("Sucesso", "Compra realizada com sucesso!");

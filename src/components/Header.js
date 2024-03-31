@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
-const Header = () => {
+const Header = ({ showCartIcon = false }) => {
   const navigation = useNavigation();
 
   return (
@@ -17,9 +17,11 @@ const Header = () => {
       <TouchableOpacity onPress={() => navigation.navigate('SalesList')}>
         <Text style={styles.link}>Vendas</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate('ShoppingCart')}>
-        <Ionicons name="cart-sharp" style={styles.cartIcon} />
-      </TouchableOpacity>
+      {showCartIcon && ( // Renderiza o ícone do carrinho somente se showCartIcon for true
+        <TouchableOpacity onPress={() => navigation.navigate('ShoppingCart')}>
+          <Ionicons name="cart-sharp" style={styles.cartIcon} />
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

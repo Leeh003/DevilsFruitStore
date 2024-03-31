@@ -132,7 +132,7 @@ const ProductListScreen = () => {
 
   return (
     <View style={styles.container}>
-       <Header />
+       <Header showCartIcon={true} />
     <View style={styles.searchContainer}>
       <TextInput
         style={[styles.searchInput, { flex: 1 }]}

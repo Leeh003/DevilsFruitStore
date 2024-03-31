@@ -1,71 +1,73 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { initDB, getSales, getSalesItens } from '../database/database';
-import { useNavigation } from '@react-navigation/native';
 import Header from '../components/Header';
 
 const SalesListScreen = () => {
   const [sales, setSales] = useState([]);
-  const [selectedSale, setSelectedSale] = useState(null);
+  const [expandedSaleId, setExpandedSaleId] = useState(null); // Identifica a venda expandida
   const [saleItems, setSaleItems] = useState([]);
   const [db, setDB] = useState(null);
-  const [showSaleItems, setShowSaleItems] = useState(false); // Estado para controlar a exibição dos itens da venda
 
   useEffect(() => {
-    const fetchSales = async () => {
+    const initializeDB = async () => {
       try {
         const db = await initDB();
         setDB(db);
         const salesData = await getSales(db);
-        console.log(salesData)
         setSales(salesData);
       } catch (error) {
         console.error('Erro ao buscar vendas:', error);
       }
     };
 
-    fetchSales();
+    initializeDB();
   }, []);
 
-  const fetchSaleItems = async (codigoVenda) => {
+  const fetchSaleItems = async (saleId) => {
     try {
-      console.log(codigoVenda)
-      const items = await getSalesItens(db, codigoVenda);
-      console.log(items);
+      const items = await getSalesItens(db, saleId);
+      console.log(items)
       setSaleItems(items);
     } catch (error) {
       console.error('Erro ao buscar itens da venda:', error);
     }
   };
 
-  const toggleSaleItems = async (codigoVenda) => {
-    if (showSaleItems) {
-      setSaleItems([]); // Limpa os itens da venda quando ocultados
+  const toggleSaleItems = async (saleId) => {
+    if (expandedSaleId === saleId) {
+      // Se a venda já está expandida, recolhe
+      setExpandedSaleId(null);
+      setSaleItems([]);
     } else {
-      await fetchSaleItems(codigoVenda); // Busca os itens da venda quando exibidos
+      // Expande a nova venda
+      await fetchSaleItems(saleId);
+      setExpandedSaleId(saleId);
     }
-    setShowSaleItems(!showSaleItems); // Alterna o estado de exibição dos itens da venda
   };
+
+  const renderSaleItemCard = ({ item }) => (
+    <View style={styles.saleItemCard}>
+      <Text>Produto: {item.nomeProduto}</Text>
+      <Text>Quantidade: {item.quantidade}</Text>
+      <Text>Preço Unitário: R$ {item.valorItens}</Text>
+      <Text>Preço do Item: R$ {item.valorItens * item.quantidade}</Text>
+    </View>
+  );
 
   const renderSaleCard = ({ item }) => (
     <TouchableOpacity
       style={styles.saleCard}
-      onPress={() => toggleSaleItems(item.codigo)} // Altera o estado de exibição dos itens da venda ao clicar no card da venda
+      onPress={() => toggleSaleItems(item.codigo)}
     >
       <Text style={styles.saleText}>Código da Venda: #1000{item.codigo}</Text>
       <Text style={styles.saleText}>Data da Venda: {item.dataVenda.split('T')[0]}</Text>
-      <Text style={styles.saleText}>Valor: {item.total}</Text>
-      {showSaleItems && selectedSale?.codigo === item.codigo && ( // Renderiza os itens da venda apenas se o estado showSaleItems for true e o card da venda for o selecionado
+      <Text style={styles.saleText}>Valor Total: R$ {item.total.toFixed(2)}</Text>
+      {expandedSaleId === item.codigo && (
         <FlatList
           data={saleItems}
-          renderItem={({ item }) => (
-            <View style={styles.saleItem}>
-              <Text>{item.nome}</Text>
-              <Text>{item.quantity}</Text>
-              <Text>{item.preco}</Text>
-            </View>
-          )}
-          keyExtractor={(item) => item.codigo.toString()}
+          renderItem={renderSaleItemCard}
+          keyExtractor={(item, index) => `saleItem-${index}`}
         />
       )}
     </TouchableOpacity>
@@ -73,7 +75,7 @@ const SalesListScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Header />
+      <Header/>
       <FlatList
         data={sales}
         renderItem={renderSaleCard}
@@ -100,14 +102,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 5,
   },
-  saleItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 5,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+  saleItemCard: {
+    backgroundColor: '#f9f9f9',
+    padding: 15,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
+    marginTop: 10,
   },
+  // Adicione mais estilos conforme necessário
 });
 
 export default SalesListScreen;

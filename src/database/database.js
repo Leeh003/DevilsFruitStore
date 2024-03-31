@@ -1,6 +1,5 @@
 //database.js
 import * as SQLite from 'expo-sqlite';
-
 const database_name = 'OnePieceStore.db';
 
 export const getDBConnection = async () => {
@@ -19,7 +18,7 @@ export const initDB = async () => {
           'CREATE TABLE IF NOT EXISTS Vendas (codigo INTEGER PRIMARY KEY NOT NULL, dataVenda TEXT, total REAL);'
         );
         tx.executeSql(
-          'CREATE TABLE IF NOT EXISTS ItensVenda (codigo INTEGER PRIMARY KEY NOT NULL, codigoVenda INTEGER, codigoProduto INTEGER, quantidade INTEGER, valorItens DOUBLE, FOREIGN KEY (codigoVenda) REFERENCES Vendas (codigo), FOREIGN KEY (codigoProduto) REFERENCES Produtos (codigo));'
+          'CREATE TABLE IF NOT EXISTS ItensVenda (codigo INTEGER PRIMARY KEY NOT NULL, codigoVenda INTEGER, codigoProduto INTEGER, quantidade INTEGER, valorItens REAL, FOREIGN KEY (codigoVenda) REFERENCES Vendas (codigo), FOREIGN KEY (codigoProduto) REFERENCES Produtos (codigo));'
         );
         tx.executeSql(
           'CREATE TABLE IF NOT EXISTS Categorias (id INTEGER PRIMARY KEY NOT NULL, nome TEXT, descricao TEXT, isSub BOOLEAN, mainCat TEXT);'
@@ -264,8 +263,12 @@ export const insertSaleItens = async (db, codigoVenda, codigoProduto, quantidade
 export const getSalesItens = async (db, codVenda) => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
+      // Realiza um JOIN com a tabela Produtos para obter o nome do produto junto com os outros campos de ItensVenda
       tx.executeSql(
-        'SELECT * FROM ItensVenda WHERE codigoVenda = ?;',
+        `SELECT ItensVenda.*, Produtos.name AS nomeProduto
+         FROM ItensVenda
+         INNER JOIN Produtos ON ItensVenda.codigoProduto = Produtos.codigo
+         WHERE ItensVenda.codigoVenda = ?;`,
         [codVenda],
         (_, results) => {
           let data = [];
