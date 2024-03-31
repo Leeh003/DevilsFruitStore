@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 
 const Header = () => {
   const navigation = useNavigation();
@@ -17,7 +18,7 @@ const Header = () => {
         <Text style={styles.link}>Vendas</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('ShoppingCart')}>
-        <Text style={styles.cartIcon}>Carrinho</Text>
+        <Ionicons name="cart-sharp" style={styles.cartIcon} />
       </TouchableOpacity>
     </View>
   );
@@ -38,8 +39,7 @@ const styles = {
     color: 'blue',
   },
   cartIcon: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 24, 
     color: 'green',
   },
 };

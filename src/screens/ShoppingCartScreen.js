@@ -1,5 +1,6 @@
 import { View, Text, Modal, FlatList, Image, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { insertSale, insertSaleItems } from '../database/database';
+import { Ionicons } from '@expo/vector-icons';
 
 const ShoppingCartScreen = ({ isVisible, toggleModal, cartItems, setCartItems, db }) => {
 
@@ -18,7 +19,7 @@ const ShoppingCartScreen = ({ isVisible, toggleModal, cartItems, setCartItems, d
       const saleId = await insertSale(db, saleDate, total);
 
       cartItems.forEach(async item => {
-        await insertSaleItems(db, saleId, item.id, item.quantity, item.preco);
+        await insertSaleItems(db, saleId.insertId, item.codigo, item.quantity, item.preco);
       });
       toggleModal();
       Alert.alert("Sucesso", "Compra realizada com sucesso!");
@@ -29,6 +30,11 @@ const ShoppingCartScreen = ({ isVisible, toggleModal, cartItems, setCartItems, d
     }
   };
 
+  const removeItem = (itemId) => {
+    const updatedCartItems = cartItems.filter(item => item.codigo !== itemId);
+    setCartItems(updatedCartItems);
+  };
+
   const renderItem = ({ item }) => (
     <View style={styles.itemContainer}>
       <Image source={{ uri: item.imagem }} style={styles.itemImage} />
@@ -37,6 +43,9 @@ const ShoppingCartScreen = ({ isVisible, toggleModal, cartItems, setCartItems, d
         <Text style={styles.itemQuantity}>Quantidade: {item.quantity}</Text>
         <Text style={styles.itemPrice}>Valor: R$ {item.preco * item.quantity}</Text>
       </View>
+      <TouchableOpacity onPress={() => removeItem(item.codigo)} style={styles.removeButton}>
+        <Ionicons name="trash-outline" size={20} color="#fff" />
+      </TouchableOpacity>
     </View>
   );
 
@@ -50,7 +59,7 @@ const ShoppingCartScreen = ({ isVisible, toggleModal, cartItems, setCartItems, d
           <FlatList
             data={cartItems}
             renderItem={renderItem}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item) => item.codigo.toString()}
           />
           <TouchableOpacity onPress={finalizePurchase} style={styles.finalizeButton}>
             <Text style={styles.finalizeButtonText}>Finalizar Compra</Text>
@@ -103,7 +112,7 @@ const styles = StyleSheet.create({
   closeButton: {
     position: 'absolute',
     top: 5,
-    right: 15,
+    right: 12,
   },
   closeButtonText: {
     color: 'blue',
@@ -120,6 +129,13 @@ const styles = StyleSheet.create({
   finalizeButtonText: {
     color: '#fff',
     fontSize: 16,
+  },
+  removeButton: {
+    backgroundColor: 'red',
+    padding: 5,
+    borderRadius: 5,
+    marginLeft: 10,
+    alignItems: 'center',
   },
 });
 

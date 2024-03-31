@@ -20,6 +20,7 @@
     "expo-status-bar": "~1.11.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-icons": "^5.0.1",
     "react-native": "0.73.5",
     "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "~2.14.0",

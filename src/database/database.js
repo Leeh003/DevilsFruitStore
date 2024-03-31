@@ -233,7 +233,7 @@ export const getSales = async (db) => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
-        'SELECT * FROM Vendas;',
+        'SELECT * FROM Vendas ORDER BY codigo DESC;',
         [],
         (_, results) => {
           let data = [];
