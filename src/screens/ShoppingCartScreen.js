@@ -1,5 +1,5 @@
 import { View, Text, Modal, FlatList, Image, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { insertSale, insertSaleItens, updateDBStructure } from '../database/database';
+import { insertSale, insertSaleItens } from '../database/database';
 import { Ionicons } from '@expo/vector-icons';
 
 const ShoppingCartScreen = ({ isVisible, toggleModal, cartItems, setCartItems, db }) => {

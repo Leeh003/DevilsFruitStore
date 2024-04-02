@@ -24,6 +24,7 @@ export const initDB = async () => {
           'CREATE TABLE IF NOT EXISTS Categorias (id INTEGER PRIMARY KEY NOT NULL, nome TEXT, descricao TEXT, isSub BOOLEAN, mainCat TEXT);'
         );
       });
+      checkCategories(db);
       return db;
   } catch (error) {
     console.log(error);
@@ -141,7 +142,6 @@ export const updateProduct = async (db, codigo, name, descricao, preco, categori
   });
 };
 
-
 export const deleteProduct = async (db, codigo) => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
@@ -155,7 +155,14 @@ export const deleteProduct = async (db, codigo) => {
   });
 };
 
-export const insertCategories = async (db, name, descricao, isSub = true, mainCat = 'Zoan') => {
+export const insertCategories = async (db, name, descricao, isSub, mainCat) => {
+  if (isSub === undefined) {
+    isSub = true; // Valor padrão para isSub
+  }
+  if (!mainCat) {
+    mainCat = 'Zoan'; // Valor padrão para mainCat
+  }
+
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
       tx.executeSql(
@@ -215,6 +222,26 @@ export const deleteCategory = async (db, codigo) => {
   });
 };
 
+// Função para verificar se existem registros na tabela de categorias
+const checkCategories = async (db) => {
+  try {
+    const categories = await getCategories(db);
+    if (categories.length === 0) {
+      // Se não houver categorias, insira registros padrão
+      await insertCategories(db, 'Paramecia', 'Paramecia concedem a seus usuários poderes sobre-humanos que não envolvem animais ou transformações elementais, podendo alterar características do corpo do usuário ou permitem ao usuário modificar as pessoas, objetos e ambiente ao seu redor. Além disso, existem alguns usuários que podem gerar e manipular substâncias.', false, null);
+      await insertCategories(db, 'Logia', 'O tipo mais raro e poderoso das Akuma no Mi, permitem que seus usuários criem, controlem e transformem seu corpo em um elemento natural. A transformação elementar torna o usuário efetivamente intangível, além de permitir que o usuário permaneça no controle de seu corpo, mesmo quando ele é quebrado em pedaços. Eles também ganham todas as habilidades relacionadas a esse elemento.', false, null);
+      await insertCategories(db, 'Zoan', 'Zoan ganham a habilidade de se transformar em um animal, bem como em uma forma híbrida entre o animal e a sua própria espécie. Uma descoberta científica recente permite que as frutas Zoan sejam integradas a objetos inanimados, dando-lhes vida e concedendo-lhes as transformações comuns de uma Zoan. Frutas Zoan de animais carnívoros são mais adequadas para o combate.', false, null);
+      await insertCategories(db, 'Zoan-Mitologica', 'Frutas Zoan que permitem ao usuário se transformar em criaturas mitológicas, como um dragão ou uma fênix. Frutas Zoan de animais míticos tendem a ter poderes especiais. As Zoan Míticas são o tipo mais raro de Akuma no Mi, ainda mais raras do que as Logia.');
+      console.log('Registros padrão de categorias foram inseridos.');
+    } else {
+      console.log('Registros de categorias já existem.');
+    }
+  } catch (error) {
+    console.error('Erro ao verificar categorias:', error);
+  }
+};
+
+
 export const insertSale = async (db, dataVenda, total) => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
@@ -263,7 +290,6 @@ export const insertSaleItens = async (db, codigoVenda, codigoProduto, quantidade
 export const getSalesItens = async (db, codVenda) => {
   return new Promise((resolve, reject) => {
     db.transaction(tx => {
-      // Realiza um JOIN com a tabela Produtos para obter o nome do produto junto com os outros campos de ItensVenda
       tx.executeSql(
         `SELECT ItensVenda.*, Produtos.name AS nomeProduto
          FROM ItensVenda
